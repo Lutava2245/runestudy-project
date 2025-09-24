@@ -63,10 +63,10 @@ def userCreate(request):
         user.save()
         return Response(user.data)
     
-    return Response(status=status.HTTP_404_NOT_FOUND)
+    return Response(user.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
-@api_view(['POST'])
+@api_view(['PUT'])
 def userUpdate(request, pk):
     user = User.objects.get(id=pk)
     serializer = UserSerializer(instance=user, data=request.data)
@@ -75,7 +75,7 @@ def userUpdate(request, pk):
         serializer.save()
         return Response(serializer.data)
     
-    return Response(status=status.HTTP_404_NOT_FOUND)
+    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
 @api_view(['DELETE'])

@@ -6,8 +6,8 @@ class User(models.Model):
     nickname = models.CharField(max_length=50)
     password = models.CharField(max_length=50)
     email = models.EmailField(max_length=254)
-    total_xp = models.IntegerField()
-    total_coins = models.IntegerField()
+    total_xp = models.IntegerField(default=0)
+    total_coins = models.IntegerField(default=0)
 
     def __str__(self):
         return self.name
@@ -15,9 +15,9 @@ class User(models.Model):
 
 class Skill(models.Model):
     name = models.CharField(max_length=100)
-    points = models.IntegerField
-    difficult = models.IntegerField
-    total_xp = models.IntegerField
+    points = models.IntegerField(default=1)
+    difficult = models.IntegerField(default=1)
+    total_xp = models.IntegerField(default=0)
     user = models.ForeignKey(to='User', on_delete=models.CASCADE)
 
     def __str__(self):
@@ -28,7 +28,7 @@ class Reward(models.Model):
     title = models.CharField(max_length=100)
     description = models.CharField(max_length=200)
     completed = models.BooleanField(default=False)
-    price = models.IntegerField()
+    price = models.IntegerField(default=100)
     user = models.ForeignKey(to='User', on_delete=models.CASCADE)
 
     def __str__(self):
@@ -40,9 +40,9 @@ class Task(models.Model):
     description = models.CharField(max_length=200)
     block = models.BooleanField(default=False)
     status = models.IntegerField(default=0)
-    difficult = models.IntegerField()
-    task_xp = models.IntegerField()
-    coins = models.IntegerField(default=0)
+    difficult = models.IntegerField(default=1)
+    task_xp = models.IntegerField(default=100)
+    coins = models.IntegerField(default=20)
     user = models.ForeignKey(to='User', on_delete=models.CASCADE)
     skill = models.ForeignKey(to='Skill', on_delete=models.CASCADE)
 

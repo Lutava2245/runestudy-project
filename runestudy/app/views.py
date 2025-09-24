@@ -1,8 +1,8 @@
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from rest_framework import serializers, status
-from .models import User
-from .serializers import UserSerializer
+from .models import Skill, User
+from .serializers import SkillSerializer, UserSerializer
 
 
 @api_view(['GET'])
@@ -42,14 +42,18 @@ def userList(request):
         serializer = UserSerializer(users, many=True)
         return Response(serializer.data)
     
-    return Response({'Nenhum usuário encontrado': 'Tente outros filtros'}, status=status.HTTP_404_NOT_FOUND)
+    return Response({'Nenhum usuário encontrado': 'Tente outros filtros'}, status=status.HTTP_204_NO_CONTENT)
 
 
 @api_view(['GET'])
 def userDetail(request, pk):
-    user = User.objects.get(id=pk)
-    serializer = UserSerializer(user, many=False)
-    return Response(serializer.data)
+    try:
+        user = User.objects.get(id=pk)
+        serializer = UserSerializer(user, many=False)
+        return Response(serializer.data)
+    except User.DoesNotExist:
+        return Response({'error': 'Usuário não encontrado'}, status=status.HTTP_404_NOT_FOUND)
+
 
 
 @api_view(['POST'])
@@ -68,18 +72,87 @@ def userCreate(request):
 
 @api_view(['PUT'])
 def userUpdate(request, pk):
-    user = User.objects.get(id=pk)
-    serializer = UserSerializer(instance=user, data=request.data)
+    try:
+        user = User.objects.get(id=pk)
+        serializer = UserSerializer(instance=user, data=request.data)
 
-    if serializer.is_valid():
-        serializer.save()
-        return Response(serializer.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data)
+        
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     
-    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    except User.DoesNotExist:
+        return Response({'error': 'Usuário não encontrado'}, status=status.HTTP_404_NOT_FOUND)
+
 
 
 @api_view(['DELETE'])
 def userDelete(request, pk):
-    user = User.objects.get(id=pk)
-    user.delete()
-    return Response('Usuário deletado com sucesso!', status=status.HTTP_204_NO_CONTENT)
+    try:
+        user = User.objects.get(id=pk)
+        user.delete()
+        return Response('Usuário deletado com sucesso!', status=status.HTTP_204_NO_CONTENT)
+    except User.DoesNotExist:
+        return Response({'error': 'Usuário não encontrado'}, status=status.HTTP_404_NOT_FOUND)
+
+
+@api_view(['GET'])
+def skillList(request):
+    skills = Skill.objects.filter(**request.query_params.dict()) if request.query_params else Skill.objects.all()
+
+    if skills:
+        serializer = SkillSerializer(skills, many=True)
+        return Response(serializer.data)
+    
+    return Response({'Nenhuma habilidade encontrada': 'Tente outros filtros'}, status=status.HTTP_204_NO_CONTENT)
+
+
+@api_view(['GET'])
+def skillDetail(request, pk):
+    try:
+        skill = Skill.objects.get(id=pk)
+        serializer = SkillSerializer(skill, many=False)
+        return Response(serializer.data)
+    except Skill.DoesNotExist:
+        return Response({'error': 'Usuário não encontrado'}, status=status.HTTP_404_NOT_FOUND)
+
+
+@api_view(['POST'])
+def skillCreate(request):
+    skill = SkillSerializer(data=request.data)
+
+    if Skill.objects.filter(**request.data).exists():
+        raise serializers.ValidationError("This skill already exists")
+    
+    if skill.is_valid():
+        skill.save()
+        return Response(skill.data)
+    
+    return Response(skill.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+@api_view(['PUT'])
+def skillUpdate(request, pk):
+    try:
+        skill = Skill.objects.get(id=pk)
+        serializer = SkillSerializer(instance=skill, data=request.data)
+
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data)
+        
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    
+    except Skill.DoesNotExist:
+        return Response({'error': 'Usuário não encontrado'}, status=status.HTTP_404_NOT_FOUND)
+
+
+@api_view(['DELETE'])
+def skillDelete(request, pk):
+    try:
+        skill = Skill.objects.get(id=pk)
+        skill.delete()
+        return Response('Habilidade deletada com sucesso!', status=status.HTTP_204_NO_CONTENT)
+    except Skill.DoesNotExist:
+        return Response({'error': 'Usuário não encontrado'}, status=status.HTTP_404_NOT_FOUND)

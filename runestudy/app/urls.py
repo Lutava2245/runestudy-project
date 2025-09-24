@@ -14,4 +14,9 @@ urlpatterns = [
     path('skills/create/', views.skillCreate, name="skill-create"),
     path('skills/<int:pk>/update/', views.skillUpdate, name='skill-update'),
     path('skills/<int:pk>/delete/', views.skillDelete, name='skill-delete'),
+    path('rewards/', views.rewardList, name='reward-list'),
+    path('rewards/<int:pk>/', views.rewardDetail, name='reward-detail'),
+    path('rewards/create/', views.rewardCreate, name="reward-create"),
+    path('rewards/<int:pk>/update/', views.rewardUpdate, name='reward-update'),
+    path('rewards/<int:pk>/delete/', views.rewardDelete, name='reward-delete'),
 ]

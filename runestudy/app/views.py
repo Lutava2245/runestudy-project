@@ -1,8 +1,8 @@
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from rest_framework import serializers, status
-from .models import Skill, User
-from .serializers import SkillSerializer, UserSerializer
+from .models import Reward, Skill, User
+from .serializers import RewardSerializer, SkillSerializer, UserSerializer
 
 
 @api_view(['GET'])
@@ -34,6 +34,7 @@ def ApiOverview(request):
     return Response(api_urls)
 
 
+
 @api_view(['GET'])
 def userList(request):
     users = User.objects.filter(**request.query_params.dict()) if request.query_params else User.objects.all()
@@ -53,7 +54,6 @@ def userDetail(request, pk):
         return Response(serializer.data)
     except User.DoesNotExist:
         return Response({'error': 'Usuário não encontrado'}, status=status.HTTP_404_NOT_FOUND)
-
 
 
 @api_view(['POST'])
@@ -86,7 +86,6 @@ def userUpdate(request, pk):
         return Response({'error': 'Usuário não encontrado'}, status=status.HTTP_404_NOT_FOUND)
 
 
-
 @api_view(['DELETE'])
 def userDelete(request, pk):
     try:
@@ -95,6 +94,7 @@ def userDelete(request, pk):
         return Response('Usuário deletado com sucesso!', status=status.HTTP_204_NO_CONTENT)
     except User.DoesNotExist:
         return Response({'error': 'Usuário não encontrado'}, status=status.HTTP_404_NOT_FOUND)
+
 
 
 @api_view(['GET'])
@@ -115,7 +115,7 @@ def skillDetail(request, pk):
         serializer = SkillSerializer(skill, many=False)
         return Response(serializer.data)
     except Skill.DoesNotExist:
-        return Response({'error': 'Usuário não encontrado'}, status=status.HTTP_404_NOT_FOUND)
+        return Response({'error': 'Habilidade não encontrada'}, status=status.HTTP_404_NOT_FOUND)
 
 
 @api_view(['POST'])
@@ -145,7 +145,7 @@ def skillUpdate(request, pk):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     
     except Skill.DoesNotExist:
-        return Response({'error': 'Usuário não encontrado'}, status=status.HTTP_404_NOT_FOUND)
+        return Response({'error': 'Habilidade não encontrada'}, status=status.HTTP_404_NOT_FOUND)
 
 
 @api_view(['DELETE'])
@@ -155,4 +155,66 @@ def skillDelete(request, pk):
         skill.delete()
         return Response('Habilidade deletada com sucesso!', status=status.HTTP_204_NO_CONTENT)
     except Skill.DoesNotExist:
-        return Response({'error': 'Usuário não encontrado'}, status=status.HTTP_404_NOT_FOUND)
+        return Response({'error': 'Habilidade não encontrada'}, status=status.HTTP_404_NOT_FOUND)
+
+
+
+@api_view(['GET'])
+def rewardList(request):
+    rewards = Reward.objects.filter(**request.query_params.dict()) if request.query_params else Reward.objects.all()
+
+    if rewards:
+        serializer = RewardSerializer(rewards, many=True)
+        return Response(serializer.data)
+    
+    return Response({'Nenhuma recompensa encontrada': 'Tente outros filtros'}, status=status.HTTP_204_NO_CONTENT)
+
+
+@api_view(['GET'])
+def rewardDetail(request, pk):
+    try:
+        reward = Reward.objects.get(id=pk)
+        serializer = RewardSerializer(reward, many=False)
+        return Response(serializer.data)
+    except Reward.DoesNotExist:
+        return Response({'error': 'Recompensa não encontrada'}, status=status.HTTP_404_NOT_FOUND)
+
+
+@api_view(['POST'])
+def rewardCreate(request):
+    reward = RewardSerializer(data=request.data)
+
+    if Reward.objects.filter(**request.data).exists():
+        raise serializers.ValidationError("This reward already exists")
+    
+    if reward.is_valid():
+        reward.save()
+        return Response(reward.data)
+    
+    return Response(reward.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+@api_view(['PUT'])
+def rewardUpdate(request, pk):
+    try:
+        reward = Reward.objects.get(id=pk)
+        serializer = RewardSerializer(instance=reward, data=request.data)
+
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data)
+        
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    
+    except Reward.DoesNotExist:
+        return Response({'error': 'Recompensa não encontrada'}, status=status.HTTP_404_NOT_FOUND)
+
+
+@api_view(['DELETE'])
+def rewardDelete(request, pk):
+    try:
+        reward = Reward.objects.get(id=pk)
+        reward.delete()
+        return Response('Recompensa deletada com sucesso!', status=status.HTTP_204_NO_CONTENT)
+    except Reward.DoesNotExist:
+        return Response({'error': 'Recompensa não encontrada'}, status=status.HTTP_404_NOT_FOUND)

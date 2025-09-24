@@ -1,8 +1,8 @@
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from rest_framework import serializers, status
-from .models import Reward, Skill, User
-from .serializers import RewardSerializer, SkillSerializer, UserSerializer
+from .models import Reward, Skill, Task, User
+from .serializers import RewardSerializer, SkillSerializer, TaskSerializer, UserSerializer
 
 
 @api_view(['GET'])
@@ -13,7 +13,6 @@ def ApiOverview(request):
         'Task Create': '/tasks/create/',
         'Task Update': '/tasks/<str:pk>/update/',
         'Task Delete': '/tasks/<str:pk>/delete/',
-        'Task List by Skill': '/tasks/?fskill=<str:skill_id>',
         'Skill List': '/skills/',
         'Skill Detail View': '/skills/<str:pk>/',
         'Skill Create': '/skills/create/',
@@ -218,3 +217,65 @@ def rewardDelete(request, pk):
         return Response('Recompensa deletada com sucesso!', status=status.HTTP_204_NO_CONTENT)
     except Reward.DoesNotExist:
         return Response({'error': 'Recompensa não encontrada'}, status=status.HTTP_404_NOT_FOUND)
+
+
+
+@api_view(['GET'])
+def taskList(request):
+    tasks = Task.objects.filter(**request.query_params.dict()) if request.query_params else Task.objects.all()
+
+    if tasks:
+        serializer = TaskSerializer(tasks, many=True)
+        return Response(serializer.data)
+    
+    return Response({'Nenhuma tarefa encontrada': 'Tente outros filtros'}, status=status.HTTP_204_NO_CONTENT)
+
+
+@api_view(['GET'])
+def taskDetail(request, pk):
+    try:
+        task = Task.objects.get(id=pk)
+        serializer = TaskSerializer(task, many=False)
+        return Response(serializer.data)
+    except Task.DoesNotExist:
+        return Response({'error': 'Tarefa não encontrada'}, status=status.HTTP_404_NOT_FOUND)
+
+
+@api_view(['POST'])
+def taskCreate(request):
+    task = TaskSerializer(data=request.data)
+
+    if Task.objects.filter(**request.data).exists():
+        raise serializers.ValidationError("This task already exists")
+    
+    if task.is_valid():
+        task.save()
+        return Response(task.data)
+    
+    return Response(task.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+@api_view(['POST'])
+def taskUpdate(request, pk):
+    try:
+        task = Task.objects.get(id=pk)
+        serializer = TaskSerializer(instance=task, data=request.data)
+
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data)
+        
+        return Response(status=status.HTTP_400_BAD_REQUEST)
+    
+    except Task.DoesNotExist:
+        return Response({'error': 'Tarefa não encontrada'}, status=status.HTTP_404_NOT_FOUND)
+
+
+@api_view(['DELETE'])
+def taskDelete(request, pk):
+    try:
+        task = Task.objects.get(id=pk)
+        task.delete()
+        return Response('Tarefa deletada com sucesso!', status=status.HTTP_204_NO_CONTENT)
+    except Task.DoesNotExist:
+        return Response({'error': 'Tarefa não encontrada'}, status=status.HTTP_404_NOT_FOUND)

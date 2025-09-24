@@ -19,4 +19,9 @@ urlpatterns = [
     path('rewards/create/', views.rewardCreate, name="reward-create"),
     path('rewards/<int:pk>/update/', views.rewardUpdate, name='reward-update'),
     path('rewards/<int:pk>/delete/', views.rewardDelete, name='reward-delete'),
+    path('tasks/', views.taskList, name='task-list'),
+    path('tasks/<int:pk>/', views.taskDetail, name='task-detail'),
+    path('tasks/create/', views.taskCreate, name="task-create"),
+    path('tasks/<int:pk>/update/', views.taskUpdate, name='task-update'),
+    path('tasks/<int:pk>/delete/', views.taskDelete, name='task-delete'),
 ]
